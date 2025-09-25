@@ -16,6 +16,8 @@
 
 package com.alibaba.cloud.tests.sentinel.degrade;
 
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.test.LocalServerPort;
@@ -34,7 +36,7 @@ class SentinelDegradeTestAppTest {
 	@Autowired
 	TestRestTemplate rest;
 
-	// @Test
+	@Test
 	public void testDegradeRule() {
 		ResponseEntity<String> res = rest
 				.getForEntity("http://localhost:" + port + "/degrade", String.class);

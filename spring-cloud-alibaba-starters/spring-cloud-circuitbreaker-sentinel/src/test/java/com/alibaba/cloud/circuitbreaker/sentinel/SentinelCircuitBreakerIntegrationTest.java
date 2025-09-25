@@ -24,6 +24,7 @@ import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -52,7 +53,7 @@ public class SentinelCircuitBreakerIntegrationTest {
 	@Autowired
 	private Application.DemoControllerService service;
 
-	// @Test
+	@Test
 	public void testSlow() throws Exception {
 		assertThat(service.slow(true)).isEqualTo("slow");
 		assertThat(service.slow(true)).isEqualTo("slow");
@@ -74,7 +75,7 @@ public class SentinelCircuitBreakerIntegrationTest {
 		assertThat(service.slow(true)).isEqualTo("slow");
 	}
 
-	// @Test
+	@Test
 	public void testNormal() {
 		assertThat(service.normal()).isEqualTo("normal");
 	}

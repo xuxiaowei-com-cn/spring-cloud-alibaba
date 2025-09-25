@@ -19,6 +19,8 @@ package com.alibaba.cloud.tests.sentinel.degrade;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Test;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.test.LocalServerPort;
@@ -39,7 +41,7 @@ class SentinelFlowControlTestAppTest {
 	@Autowired
 	TestRestTemplate rest;
 
-	// @Test
+	@Test
 	void testFlowControl_whenNotTriggered() {
 		final int count = 3;
 		List<String> result = new ArrayList<>();
@@ -54,7 +56,7 @@ class SentinelFlowControlTestAppTest {
 		assertThat(result).doesNotContain("fallback");
 	}
 
-	// @Test
+	@Test
 	void testFlowControl_whenTriggered() {
 		final int count = 3;
 		List<String> result = new ArrayList<>();

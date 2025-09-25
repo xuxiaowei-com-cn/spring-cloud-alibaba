@@ -16,9 +16,6 @@
 
 package com.alibaba.cloud.examples.rocketmq;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -30,6 +27,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * RocketMQ Bus Spring Application.
@@ -92,8 +90,7 @@ public class RocketMQBusApplication {
 	}
 
 	@EventListener
-	public void onAckEvent(AckRemoteApplicationEvent event)
-			throws JsonProcessingException {
+	public void onAckEvent(AckRemoteApplicationEvent event) {
 		System.out.printf("Server [port : %d] listeners on %s\n", localServerPort,
 				objectMapper.writeValueAsString(event));
 	}

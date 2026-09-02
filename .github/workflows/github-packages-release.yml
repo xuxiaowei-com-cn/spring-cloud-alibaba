@@ -4,6 +4,7 @@ on:
     branches:
       - 2023.x
       - 2025.0.x
+      - xuxiaowei/*
 jobs:
   release:
     name: Release

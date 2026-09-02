@@ -16,10 +16,11 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Set up JDK 21
-        uses: actions/setup-java@v5.4.0
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'adopt'
+          show-download-progress: true
       - name: Dependencies Cache
         uses: actions/cache@v5
         with:

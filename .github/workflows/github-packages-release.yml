@@ -26,6 +26,10 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      - name: show maven env options
+        run: |
+          echo "MAVEN_OPTS=$MAVEN_OPTS"
+          echo "MAVEN_CLI_OPTS=$MAVEN_CLI_OPTS"
       - name: show maven version
         run: mvn -v
       - name: install dependencies

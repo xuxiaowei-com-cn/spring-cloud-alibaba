@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v6.0.0
         with:
           java-version: '21'
-          distribution: 'adopt'
+          distribution: 'temurin'
       - name: Dependencies Cache
         uses: actions/cache@v4
         with:

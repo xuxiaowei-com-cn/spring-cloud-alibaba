@@ -5,6 +5,7 @@ on:
       - 2023.x
       - 2025.0.x
       - 2025.1.x
+      - xuxiaowei/*
 jobs:
   release:
     name: Release

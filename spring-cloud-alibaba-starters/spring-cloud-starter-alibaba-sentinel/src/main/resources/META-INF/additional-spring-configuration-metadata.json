@@ -7,10 +7,10 @@
       "description": "enable or disable sentinel auto configure."
     },
     {
-      "name": "resttemplate.sentinel.enabled",
+      "name": "restclient.sentinel.enabled",
       "type": "java.lang.Boolean",
       "defaultValue": true,
-      "description": "enable or disable @SentinelRestTemplate."
+      "description": "enable or disable @SentinelRestClient."
     },
     {
       "name": "spring.cloud.sentinel.eager",

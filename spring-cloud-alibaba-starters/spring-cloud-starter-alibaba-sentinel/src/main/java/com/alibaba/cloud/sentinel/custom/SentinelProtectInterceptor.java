@@ -21,7 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
 import com.alibaba.cloud.sentinel.rest.SentinelClientHttpResponse;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
@@ -35,23 +35,17 @@ import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
-import org.springframework.web.client.RestTemplate;
-
 /**
- * Interceptor using by SentinelRestTemplate.
+ * Interceptor using by {@link SentinelRestClient}.
  *
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor {
 
-	private final SentinelRestTemplate sentinelRestTemplate;
+	private final SentinelRestClient sentinelRestClient;
 
-	private final RestTemplate restTemplate;
-
-	public SentinelProtectInterceptor(SentinelRestTemplate sentinelRestTemplate,
-			RestTemplate restTemplate) {
-		this.sentinelRestTemplate = sentinelRestTemplate;
-		this.restTemplate = restTemplate;
+	public SentinelProtectInterceptor(SentinelRestClient sentinelRestClient) {
+		this.sentinelRestClient = sentinelRestClient;
 	}
 
 	@Override
@@ -67,8 +61,8 @@ public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor 
 			entryWithPath = false;
 		}
 		Method urlCleanerMethod = BlockClassRegistry.lookupUrlCleaner(
-				sentinelRestTemplate.urlCleanerClass(),
-				sentinelRestTemplate.urlCleaner());
+				sentinelRestClient.urlCleanerClass(),
+				sentinelRestClient.urlCleaner());
 		if (urlCleanerMethod != null) {
 			hostWithPathResource = (String) methodInvoke(urlCleanerMethod,
 					hostWithPathResource);
@@ -83,9 +77,9 @@ public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor 
 				hostWithPathEntry = SphU.entry(hostWithPathResource, EntryType.OUT);
 			}
 			response = execution.execute(request, body);
-			if (this.restTemplate.getErrorHandler().hasError(response)) {
-				Tracer.trace(
-						new IllegalStateException("RestTemplate ErrorHandler has error"));
+			if (response.getStatusCode().isError()) {
+				Tracer.trace(new IllegalStateException(
+						"RestClient has error: " + response.getStatusCode()));
 			}
 			return response;
 		}
@@ -121,8 +115,8 @@ public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor 
 		Object[] args = new Object[] { request, body, execution, ex };
 		// handle degrade
 		if (isDegradeFailure(ex)) {
-			Method fallbackMethod = extractFallbackMethod(sentinelRestTemplate.fallback(),
-					sentinelRestTemplate.fallbackClass());
+			Method fallbackMethod = extractFallbackMethod(sentinelRestClient.fallback(),
+					sentinelRestClient.fallbackClass());
 			if (fallbackMethod != null) {
 				return (ClientHttpResponse) methodInvoke(fallbackMethod, args);
 			}
@@ -132,8 +126,8 @@ public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor 
 		}
 		// handle flow
 		Method blockHandler = extractBlockHandlerMethod(
-				sentinelRestTemplate.blockHandler(),
-				sentinelRestTemplate.blockHandlerClass());
+				sentinelRestClient.blockHandler(),
+				sentinelRestClient.blockHandlerClass());
 		if (blockHandler != null) {
 			return (ClientHttpResponse) methodInvoke(blockHandler, args);
 		}

@@ -324,7 +324,7 @@ For more configuration startup parameters, please refer to https://seata.io/zh-c
 
 Start the sample by running `account-server` the Main functions of the, `order-service`, `storage-service`, and `business-service` applications separately.
 
-After starting the sample, access the following URL through the GET method of HTTP to verify `business-service` the scenarios of calling other services through RestTemplate and FeignClient in respectively.
+After starting the sample, access the following URL through the GET method of HTTP to verify `business-service` the scenarios of calling other services through RestClient and FeignClient in respectively.
 
 ```shell
 http://127.0.0.1:18081/seata/feign
@@ -380,7 +380,7 @@ View the distributed transaction logs: Check the undo_log table and global_table
 
 - Service providers that provide services through Spring MVC can automatically restore the Seata context when they receive an HTTP request with Seata information in the header.
 
-- Support the automatic passing of the Seata context when the service caller invokes through the RestTemplate.
+- Support the automatic passing of the Seata context when the service caller invokes through the RestClient.
 
 - Support the automatic passing of the Seata context when the service caller calls through FeignClient.
 

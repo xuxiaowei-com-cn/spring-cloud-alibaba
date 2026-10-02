@@ -16,7 +16,7 @@
 
 package com.alibaba.cloud.sentinel;
 
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
 import com.alibaba.cloud.sentinel.custom.SentinelBeanPostProcessor;
 import com.alibaba.cloud.sentinel.rest.SentinelClientHttpResponse;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
@@ -29,14 +29,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
-public class SentinelRestTemplateTests {
+public class SentinelRestClientTests {
 
 	@Test(expected = BeanCreationException.class)
 	public void testFbkMethod() {
@@ -62,7 +62,7 @@ public class SentinelRestTemplateTests {
 	public void testNormal() {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
 				TestConfig5.class);
-		assertThat(context.getBeansOfType(RestTemplate.class).size()).isEqualTo(1);
+		assertThat(context.getBeansOfType(RestClient.Builder.class).size()).isEqualTo(1);
 	}
 
 	@Test(expected = BeanCreationException.class)
@@ -120,9 +120,9 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(fallback = "fbk")
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		@SentinelRestClient(fallback = "fbk")
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -137,9 +137,9 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(fallbackClass = ExceptionUtil.class)
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		@SentinelRestClient(fallbackClass = ExceptionUtil.class)
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -154,9 +154,9 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(blockHandler = "blk")
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		@SentinelRestClient(blockHandler = "blk")
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -171,9 +171,9 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(blockHandlerClass = ExceptionUtil.class)
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		@SentinelRestClient(blockHandlerClass = ExceptionUtil.class)
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -188,15 +188,15 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(
-				blockHandlerClass = SentinelRestTemplateTests.ExceptionUtil.class,
+		@SentinelRestClient(
+				blockHandlerClass = SentinelRestClientTests.ExceptionUtil.class,
 				blockHandler = "handleException",
-				fallbackClass = SentinelRestTemplateTests.ExceptionUtil.class,
+				fallbackClass = SentinelRestClientTests.ExceptionUtil.class,
 				fallback = "fallbackException",
-				urlCleanerClass = SentinelRestTemplateTests.UrlCleanUtil.class,
+				urlCleanerClass = SentinelRestClientTests.UrlCleanUtil.class,
 				urlCleaner = "clean")
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -211,11 +211,11 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(
-				blockHandlerClass = SentinelRestTemplateTests.ExceptionUtil.class,
+		@SentinelRestClient(
+				blockHandlerClass = SentinelRestClientTests.ExceptionUtil.class,
 				blockHandler = "handleException1")
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -230,11 +230,11 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(
-				fallbackClass = SentinelRestTemplateTests.ExceptionUtil.class,
+		@SentinelRestClient(
+				fallbackClass = SentinelRestClientTests.ExceptionUtil.class,
 				fallback = "fallbackException1")
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -249,11 +249,11 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(
-				blockHandlerClass = SentinelRestTemplateTests.ExceptionUtil.class,
+		@SentinelRestClient(
+				blockHandlerClass = SentinelRestClientTests.ExceptionUtil.class,
 				blockHandler = "handleException2")
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -268,11 +268,11 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(
-				fallbackClass = SentinelRestTemplateTests.ExceptionUtil.class,
+		@SentinelRestClient(
+				fallbackClass = SentinelRestClientTests.ExceptionUtil.class,
 				fallback = "fallbackException2")
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -287,15 +287,15 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		@SentinelRestClient
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 		@Bean
-		@SentinelRestTemplate
-		RestTemplate restTemplate2() {
-			return new RestTemplate();
+		@SentinelRestClient
+		RestClient.Builder restClientBuilder2() {
+			return RestClient.builder();
 		}
 
 	}
@@ -310,9 +310,9 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(urlCleaner = "cln")
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		@SentinelRestClient(urlCleaner = "cln")
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -327,9 +327,9 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(urlCleanerClass = UrlCleanUtil.class)
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		@SentinelRestClient(urlCleanerClass = UrlCleanUtil.class)
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -344,11 +344,11 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(
-				urlCleanerClass = SentinelRestTemplateTests.UrlCleanUtil.class,
+		@SentinelRestClient(
+				urlCleanerClass = SentinelRestClientTests.UrlCleanUtil.class,
 				urlCleaner = "clean1")
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}
@@ -363,11 +363,11 @@ public class SentinelRestTemplateTests {
 		}
 
 		@Bean
-		@SentinelRestTemplate(
-				urlCleanerClass = SentinelRestTemplateTests.UrlCleanUtil.class,
+		@SentinelRestClient(
+				urlCleanerClass = SentinelRestClientTests.UrlCleanUtil.class,
 				urlCleaner = "clean2")
-		RestTemplate restTemplate() {
-			return new RestTemplate();
+		RestClient.Builder restClientBuilder() {
+			return RestClient.builder();
 		}
 
 	}

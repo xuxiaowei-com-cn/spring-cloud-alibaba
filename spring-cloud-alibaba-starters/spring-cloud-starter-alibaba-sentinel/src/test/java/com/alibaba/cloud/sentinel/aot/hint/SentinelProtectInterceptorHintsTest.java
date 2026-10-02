@@ -18,13 +18,12 @@ package com.alibaba.cloud.sentinel.aot.hint;
 
 import java.lang.reflect.Constructor;
 
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
 import com.alibaba.cloud.sentinel.custom.SentinelProtectInterceptor;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
-import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +36,7 @@ public class SentinelProtectInterceptorHintsTest {
 	public void shouldRegisterHints() {
 		Constructor<SentinelProtectInterceptor> constructor;
 		try {
-			constructor = SentinelProtectInterceptor.class.getConstructor(SentinelRestTemplate.class, RestTemplate.class);
+			constructor = SentinelProtectInterceptor.class.getConstructor(SentinelRestClient.class);
 		}
 		catch (NoSuchMethodException e) {
 			throw new RuntimeException(e);

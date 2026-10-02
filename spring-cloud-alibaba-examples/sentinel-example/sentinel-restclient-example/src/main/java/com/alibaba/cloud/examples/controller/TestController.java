@@ -19,7 +19,7 @@ package com.alibaba.cloud.examples.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 /**
  * @author raozihao
@@ -29,21 +29,24 @@ import org.springframework.web.client.RestTemplate;
 public class TestController {
 
 	@Autowired
-	RestTemplate restTemplate;
+	RestClient restClient;
 
 	@GetMapping("/exp")
 	public String exp() {
-		return restTemplate.getForObject("https://httpbin.org/status/500", String.class);
+		return restClient.get().uri("https://httpbin.org/status/500").retrieve()
+				.body(String.class);
 	}
 
 	@GetMapping("/rt")
 	public String rt() {
-		return restTemplate.getForObject("https://httpbin.org/delay/3", String.class);
+		return restClient.get().uri("https://httpbin.org/delay/3").retrieve()
+				.body(String.class);
 	}
 
 	@GetMapping("/get")
 	public String get() {
-		return restTemplate.getForObject("https://httpbin.org/get", String.class);
+		return restClient.get().uri("https://httpbin.org/get").retrieve()
+				.body(String.class);
 	}
 
 }

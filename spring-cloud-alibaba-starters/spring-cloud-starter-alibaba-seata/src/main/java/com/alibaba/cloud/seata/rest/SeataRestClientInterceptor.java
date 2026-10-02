@@ -30,7 +30,7 @@ import org.springframework.util.StringUtils;
 /**
  * @author xiaojing
  */
-public class SeataRestTemplateInterceptor implements ClientHttpRequestInterceptor {
+public class SeataRestClientInterceptor implements ClientHttpRequestInterceptor {
 
 	@Override
 	public ClientHttpResponse intercept(HttpRequest httpRequest, byte[] bytes,

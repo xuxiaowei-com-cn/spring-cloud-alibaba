@@ -22,18 +22,17 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.resttestclient.TestRestTemplate;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import static com.alibaba.cloud.tests.sentinel.degrade.Util.FLOW_CONTROL_NOT_TRIGGERED;
 import static com.alibaba.cloud.tests.sentinel.degrade.Util.FLOW_CONTROL_TRIGGERED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
-@AutoConfigureTestRestTemplate
+@AutoConfigureRestTestClient
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 class SentinelFlowControlTestAppTest {
 
@@ -41,7 +40,7 @@ class SentinelFlowControlTestAppTest {
 	int port;
 
 	@Autowired
-	TestRestTemplate rest;
+	RestTestClient rest;
 
 	@Test
 	void testFlowControl_whenNotTriggered() {
@@ -49,10 +48,10 @@ class SentinelFlowControlTestAppTest {
 		List<String> result = new ArrayList<>();
 
 		for (int i = 0; i < count; i++) {
-			ResponseEntity<String> res = rest.getForEntity(
-					"http://localhost:" + port + FLOW_CONTROL_NOT_TRIGGERED,
-					String.class);
-			result.add(res.getBody());
+			String body = rest.get()
+					.uri("http://localhost:" + port + FLOW_CONTROL_NOT_TRIGGERED)
+					.exchange().returnResult(String.class).getResponseBody();
+			result.add(body);
 		}
 
 		assertThat(result).doesNotContain("fallback");
@@ -64,9 +63,10 @@ class SentinelFlowControlTestAppTest {
 		List<String> result = new ArrayList<>();
 
 		for (int i = 0; i < count; i++) {
-			ResponseEntity<String> res = rest.getForEntity(
-					"http://localhost:" + port + FLOW_CONTROL_TRIGGERED, String.class);
-			result.add(res.getBody());
+			String body = rest.get()
+					.uri("http://localhost:" + port + FLOW_CONTROL_TRIGGERED)
+					.exchange().returnResult(String.class).getResponseBody();
+			result.add(body);
 		}
 
 		assertThat(result).containsSequence("fallback");

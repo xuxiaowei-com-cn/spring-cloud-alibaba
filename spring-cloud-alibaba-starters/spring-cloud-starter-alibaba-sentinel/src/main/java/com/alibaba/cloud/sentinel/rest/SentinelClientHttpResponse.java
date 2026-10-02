@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
 import com.alibaba.cloud.sentinel.custom.SentinelProtectInterceptor;
 
 import org.springframework.http.HttpHeaders;
@@ -33,13 +33,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpResponse;
 
 /**
- * Using by {@link SentinelRestTemplate} and {@link SentinelProtectInterceptor}.
+ * Using by {@link SentinelRestClient} and {@link SentinelProtectInterceptor}.
  *
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 public class SentinelClientHttpResponse implements ClientHttpResponse {
 
-	private String blockResponse = "RestTemplate request block by sentinel";
+	private String blockResponse = "RestClient request block by sentinel";
 
 	public SentinelClientHttpResponse() {
 	}

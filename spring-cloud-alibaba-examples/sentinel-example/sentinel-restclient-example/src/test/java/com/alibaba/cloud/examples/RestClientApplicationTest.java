@@ -14,32 +14,31 @@
  * limitations under the License.
  */
 
-package com.alibaba.cloud.sentinel.annotation;
+package com.alibaba.cloud.examples;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
- * @author fangjian
+ * Test {@link RestClientApplication}.
+ *
+ * @author wangliang181230
  */
-@Target({ ElementType.METHOD })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface SentinelRestTemplate {
+@Disabled("For debugging")
+public class RestClientApplicationTest {
 
-	String blockHandler() default "";
+	/**
+	 * Please run this test after execute `mvn clean install -Pnative -e` .
+	 *
+	 * @throws Exception the exception
+	 */
+	@Test
+	public void runWithSpringAotModeAfterProcessAot() throws Exception {
+		// Enable spring-aot-mode
+		System.setProperty("spring.aot.enabled", "true");
 
-	Class<?> blockHandlerClass() default void.class;
-
-	String fallback() default "";
-
-	Class<?> fallbackClass() default void.class;
-
-	String urlCleaner() default "";
-
-	Class<?> urlCleanerClass() default void.class;
+		// Start the application
+		RestClientApplication.main(new String[0]);
+	}
 
 }

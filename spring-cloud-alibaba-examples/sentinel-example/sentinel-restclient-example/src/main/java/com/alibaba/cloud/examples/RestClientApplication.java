@@ -14,27 +14,20 @@
  * limitations under the License.
  */
 
-package com.alibaba.cloud.examples.configuration;
+package com.alibaba.cloud.examples;
 
-
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
-
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * @author raozihao
  * @author <a href="mailto:zihaorao@gmail.com">Steve</a>
  */
-@Configuration
-public class RestTemplateConfiguration {
+@SpringBootApplication
+public class RestClientApplication {
 
-	@LoadBalanced
-	@Bean
-	@SentinelRestTemplate
-	public RestTemplate restTemplate() {
-		return new RestTemplate();
+	public static void main(String[] args) {
+		SpringApplication.run(RestClientApplication.class, args);
 	}
+
 }

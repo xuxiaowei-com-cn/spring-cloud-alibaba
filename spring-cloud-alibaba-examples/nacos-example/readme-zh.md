@@ -438,19 +438,24 @@ spring.cloud.nacos.discovery.ip-type=IPv4
 spring.cloud.nacos.discovery.ip-type=IPv6
 ```
 
-#### 使用 RestTemplate 和 FeignClient
+#### 使用 RestClient 和 FeignClient
 
-下面将分析 nacos-discovery-consumer-example 项目的代码，演示如何 RestTemplate 与 FeignClient。
+下面将分析 nacos-discovery-consumer-example 项目的代码，演示如何使用 RestClient 与 FeignClient。
 
-**注意 本章节只是为了便于理解接入方式，本示例代码中已经完成接入工作，您无需再进行修改。此处只涉及 Ribbon、RestTemplate、FeignClient 相关的内容，如果已经使用了其他服务发现组件，可以通过直接替换依赖来接入 Nacos Discovery。**
+**注意 本章节只是为了便于理解接入方式，本示例代码中已经完成接入工作，您无需再进行修改。此处只涉及 Ribbon、RestClient、FeignClient 相关的内容，如果已经使用了其他服务发现组件，可以通过直接替换依赖来接入 Nacos Discovery。**
 
-1. 添加 @LoadBalanced 注解，使得 RestTemplate 接入 Ribbon
+1. 添加 @LoadBalanced 注解，使得 RestClient 接入 Ribbon，并暴露由该 Builder 构建的 RestClient Bean
 
    ```java
    @Bean
    @LoadBalanced
-   public RestTemplate restTemplate() {
-      return new RestTemplate();
+   public RestClient.Builder restClientBuilder() {
+      return RestClient.builder();
+   }
+
+   @Bean
+   public RestClient restClient(RestClient.Builder restClientBuilder) {
+      return restClientBuilder.build();
    }
    ```
 
@@ -475,13 +480,13 @@ spring.cloud.nacos.discovery.ip-type=IPv6
    public class TestController {
    
        @Autowired
-       private RestTemplate restTemplate;
+       private RestClient restClient;
        @Autowired
        private EchoService echoService;
    
        @GetMapping(value = "/echo-rest/{str}")
        public String rest(@PathVariable String str) {
-           return restTemplate.getForObject("http://service-provider/echo/" + str, String.class);
+           return restClient.get().uri("http://service-provider/echo/" + str).retrieve().body(String.class);
        }
        @GetMapping(value = "/echo-feign/{str}")
        public String feign(@PathVariable String str) {

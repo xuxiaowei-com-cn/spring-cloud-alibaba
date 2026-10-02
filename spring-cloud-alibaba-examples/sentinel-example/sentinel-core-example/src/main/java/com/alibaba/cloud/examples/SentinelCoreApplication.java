@@ -20,7 +20,7 @@ import java.util.Collections;
 
 import com.alibaba.cloud.circuitbreaker.sentinel.SentinelCircuitBreakerFactory;
 import com.alibaba.cloud.circuitbreaker.sentinel.SentinelConfigBuilder;
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
 import com.alibaba.csp.sentinel.datasource.Converter;
 import com.alibaba.csp.sentinel.slots.block.RuleConstant;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
@@ -29,7 +29,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 /**
  * @author xiaojing
@@ -38,15 +38,25 @@ import org.springframework.web.client.RestTemplate;
 public class SentinelCoreApplication {
 
 	@Bean
-	@SentinelRestTemplate(blockHandler = "handleException",
+	@SentinelRestClient(blockHandler = "handleException",
 			blockHandlerClass = ExceptionUtil.class)
-	public RestTemplate restTemplate() {
-		return new RestTemplate();
+	public RestClient.Builder restClientBuilder() {
+		return RestClient.builder();
 	}
 
 	@Bean
-	public RestTemplate restTemplate2() {
-		return new RestTemplate();
+	public RestClient restClient(RestClient.Builder restClientBuilder) {
+		return restClientBuilder.build();
+	}
+
+	@Bean
+	public RestClient.Builder restClientBuilder2() {
+		return RestClient.builder();
+	}
+
+	@Bean
+	public RestClient restClient2(RestClient.Builder restClientBuilder2) {
+		return restClientBuilder2.build();
 	}
 
 	@Bean

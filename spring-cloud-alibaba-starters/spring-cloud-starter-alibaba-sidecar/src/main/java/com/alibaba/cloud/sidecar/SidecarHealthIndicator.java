@@ -23,9 +23,7 @@ import java.util.Objects;
 import org.springframework.boot.health.contributor.AbstractHealthIndicator;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 /**
  * @author www.itmuch.com
@@ -34,12 +32,12 @@ public class SidecarHealthIndicator extends AbstractHealthIndicator {
 
 	private final SidecarProperties sidecarProperties;
 
-	private final RestTemplate restTemplate;
+	private final RestClient restClient;
 
 	public SidecarHealthIndicator(SidecarProperties sidecarProperties,
-			RestTemplate restTemplate) {
+			RestClient restClient) {
 		this.sidecarProperties = sidecarProperties;
-		this.restTemplate = restTemplate;
+		this.restClient = restClient;
 	}
 
 	@Override
@@ -51,12 +49,11 @@ public class SidecarHealthIndicator extends AbstractHealthIndicator {
 				return;
 			}
 
-			ResponseEntity<Map<String, Object>> exchange = this.restTemplate.exchange(uri,
-					HttpMethod.GET, null,
-					new ParameterizedTypeReference<Map<String, Object>>() {
+			Map<String, Object> map = this.restClient.get()
+					.uri(uri)
+					.retrieve()
+					.body(new ParameterizedTypeReference<Map<String, Object>>() {
 					});
-
-			Map<String, Object> map = exchange.getBody();
 
 			if (map == null) {
 				this.getWarning(builder);

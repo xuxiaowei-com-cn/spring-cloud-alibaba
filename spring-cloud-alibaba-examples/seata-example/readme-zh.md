@@ -324,7 +324,7 @@ sh seata-server.sh
 
 分别运行 `account-server`、`order-service`、`storage-service` 和 `business-service` 这三个应用的 Main 函数，启动示例。
 
-启动示例后，通过 HTTP 的 GET 方法访问如下 URL，可以分别验证在 `business-service` 中 通过 RestTemplate 和 FeignClient 调用其他服务的场景。
+启动示例后，通过 HTTP 的 GET 方法访问如下 URL，可以分别验证在 `business-service` 中 通过 RestClient 和 FeignClient 调用其他服务的场景。
 
 ```shell
 http://127.0.0.1:18081/seata/feign
@@ -380,7 +380,7 @@ SELECT * FROM order_tbl;
 
 - 通过 Spring MVC 提供服务的服务提供者，在收到 header 中含有 Seata 信息的 HTTP 请求时，可以自动还原 Seata 上下文。
 
-- 支持服务调用者通过 RestTemplate 调用时，自动传递 Seata 上下文。
+- 支持服务调用者通过 RestClient 调用时，自动传递 Seata 上下文。
 
 - 支持服务调用者通过 FeignClient 调用时，自动传递 Seata 上下文。
 

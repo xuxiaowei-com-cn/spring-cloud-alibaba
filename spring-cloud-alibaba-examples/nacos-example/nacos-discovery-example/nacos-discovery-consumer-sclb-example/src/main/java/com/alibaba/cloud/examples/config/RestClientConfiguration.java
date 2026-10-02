@@ -14,35 +14,44 @@
  * limitations under the License.
  */
 
-package com.alibaba.cloud.examples.configuration;
+package com.alibaba.cloud.examples.config;
 
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 /**
- * Load balancing and sentinel configuration for RestTemplate.
+ * Load balancing and sentinel configuration for RestClient.
  *
  * @author fangjian0423, MieAh
  */
 @Configuration
-public class RestTemplateConfiguration {
+public class RestClientConfiguration {
 
 	@LoadBalanced
 	@Bean
-	// todo sentinel need to support GraalVM in future
-//	@SentinelRestTemplate(urlCleanerClass = UrlCleaner.class, urlCleaner = "clean")
-	public RestTemplate urlCleanedRestTemplate() {
-		return new RestTemplate();
+	@SentinelRestClient(urlCleanerClass = UrlCleaner.class, urlCleaner = "clean")
+	public RestClient.Builder urlCleanedRestClientBuilder() {
+		return RestClient.builder();
 	}
 
 	@LoadBalanced
 	@Bean
-	// todo sentinel need to support GraalVM in future
-//	@SentinelRestTemplate
-	public RestTemplate restTemplate() {
-		return new RestTemplate();
+	@SentinelRestClient
+	public RestClient.Builder restClientBuilder() {
+		return RestClient.builder();
+	}
+
+	@Bean
+	public RestClient urlCleanedRestClient(RestClient.Builder urlCleanedRestClientBuilder) {
+		return urlCleanedRestClientBuilder.build();
+	}
+
+	@Bean
+	public RestClient restClient(RestClient.Builder restClientBuilder) {
+		return restClientBuilder.build();
 	}
 }

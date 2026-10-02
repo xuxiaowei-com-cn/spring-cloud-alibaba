@@ -25,8 +25,6 @@ import org.apache.seata.core.context.RootContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,7 +35,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 /**
  * @author xiaojing
@@ -57,13 +55,13 @@ public class OrderController {
 
 	private final JdbcTemplate jdbcTemplate;
 
-	private final RestTemplate restTemplate;
+	private final RestClient restClient;
 
 	private Random random;
 
-	public OrderController(JdbcTemplate jdbcTemplate, RestTemplate restTemplate) {
+	public OrderController(JdbcTemplate jdbcTemplate, RestClient restClient) {
 		this.jdbcTemplate = jdbcTemplate;
-		this.restTemplate = restTemplate;
+		this.restClient = restClient;
 		this.random = new Random();
 	}
 
@@ -119,19 +117,15 @@ public class OrderController {
 
 	private void invokerAccountService(int orderMoney) {
 		String url = "http://127.0.0.1:18084/account";
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
 		MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
 
 		map.add("userId", USER_ID);
 		map.add("money", orderMoney + "");
 
-		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(
-				map, headers);
-
-		ResponseEntity<String> response = restTemplate.postForEntity(url, request,
-				String.class);
+		ResponseEntity<String> response = restClient.post().uri(url)
+				.contentType(MediaType.APPLICATION_FORM_URLENCODED).body(map)
+				.retrieve().toEntity(String.class);
 	}
 
 }

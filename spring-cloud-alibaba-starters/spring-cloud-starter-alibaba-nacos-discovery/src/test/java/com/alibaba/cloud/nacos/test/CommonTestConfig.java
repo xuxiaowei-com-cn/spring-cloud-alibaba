@@ -19,7 +19,7 @@ package com.alibaba.cloud.nacos.test;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 /**
  * @author xiaojing
@@ -28,10 +28,15 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class CommonTestConfig {
 
-	@Bean
 	@LoadBalanced
-	RestTemplate loadBalancedRestTemplate() {
-		return new RestTemplate();
+	@Bean
+	public RestClient.Builder loadBalancedRestClientBuilder() {
+		return RestClient.builder();
+	}
+
+	@Bean
+	public RestClient loadBalancedRestClient(RestClient.Builder restClientBuilder) {
+		return restClientBuilder.build();
 	}
 
 }

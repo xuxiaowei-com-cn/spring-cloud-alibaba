@@ -429,19 +429,24 @@ If you want to use only IPv6 addresses, you can use the following configuration 
 spring.cloud.nacos.discovery.ip-type=IPv6
 ```
 
-#### Using RestTemplate and FeignClient
+#### Using RestClient and FeignClient
 
-Here's a look at the code for the nacos-discovery-consumer-example project to show how to RestTemplate and FeignClient.
+Here's a look at the code for the nacos-discovery-consumer-example project to show how to use RestClient and FeignClient.
 
-**Note that this section is only for the convenience of understanding the access method. The access work has been completed in this sample code, and you do not need to modify it. Only Ribbon, RestTemplate and FeignClient are involved here. If other service discovery components have been used, Nacos Discovery can be accessed by directly replacing dependencies.**
+**Note that this section is only for the convenience of understanding the access method. The access work has been completed in this sample code, and you do not need to modify it. Only Ribbon, RestClient and FeignClient are involved here. If other service discovery components have been used, Nacos Discovery can be accessed by directly replacing dependencies.**
 
-1. Add the @ LoadBalanced annotation to make the RestTemplate access the Ribbon
+1. Add the @ LoadBalanced annotation to make the RestClient access the Ribbon, and expose a RestClient bean built from that builder.
 
    ```java
    @Bean
    @LoadBalanced
-   public RestTemplate restTemplate() {
-      return new RestTemplate();
+   public RestClient.Builder restClientBuilder() {
+      return RestClient.builder();
+   }
+
+   @Bean
+   public RestClient restClient(RestClient.Builder restClientBuilder) {
+      return restClientBuilder.build();
    }
    ```
 
@@ -466,13 +471,13 @@ Here's a look at the code for the nacos-discovery-consumer-example project to sh
    public class TestController {
    
        @Autowired
-       private RestTemplate restTemplate;
+       private RestClient restClient;
        @Autowired
        private EchoService echoService;
    
        @GetMapping(value = "/echo-rest/{str}")
        public String rest(@PathVariable String str) {
-           return restTemplate.getForObject("http://service-provider/echo/" + str, String.class);
+           return restClient.get().uri("http://service-provider/echo/" + str).retrieve().body(String.class);
        }
        @GetMapping(value = "/echo-feign/{str}")
        public String feign(@PathVariable String str) {
@@ -488,13 +493,13 @@ Here's a look at the code for the nacos-discovery-consumer-example project to sh
    public class TestController {
    
        @Autowired
-       private RestTemplate restTemplate;
+       private RestClient restClient;
        @Autowired
        private EchoService echoService;
    
        @GetMapping(value = "/echo-rest/{str}")
        public String rest(@PathVariable String str) {
-           return restTemplate.getForObject("http://service-provider/echo/" + str, String.class);
+           return restClient.get().uri("http://service-provider/echo/" + str).retrieve().body(String.class);
        }
        @GetMapping(value = "/echo-feign/{str}")
        public String feign(@PathVariable String str) {

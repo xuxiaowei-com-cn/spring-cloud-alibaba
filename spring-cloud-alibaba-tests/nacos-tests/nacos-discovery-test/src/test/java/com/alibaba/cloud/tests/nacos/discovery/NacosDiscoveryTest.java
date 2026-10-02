@@ -34,7 +34,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import static com.alibaba.cloud.tests.nacos.discovery.NacosDiscoveryTestApp.Service2Client;
 import static com.alibaba.cloud.testsupport.Tester.justDo;
@@ -94,17 +94,17 @@ public class NacosDiscoveryTest {
 	}
 
 	@Test
-	public void testServiceDiscoveryWithRestTemplate() {
-		testFunction("Service discovery with RestTemplate", () -> {
-			RestTemplate restTemplate = service1.getBean(RestTemplate.class);
-			assertThatThrownBy(() -> service2_0.getBean(RestTemplate.class));
+	public void testServiceDiscoveryWithRestClient() {
+		testFunction("Service discovery with RestClient", () -> {
+			RestClient restClient = service1.getBean(RestClient.class);
+			assertThatThrownBy(() -> service2_0.getBean(RestClient.class));
 
 			// default using RR
 			List<Object> list1 = new ArrayList<>();
 			List<Object> list2 = new ArrayList<>();
 			for (int i = 0; i < 20; i++) {
-				ResponseEntity<String> response = restTemplate
-						.getForEntity("http://service-2", String.class);
+				ResponseEntity<String> response = restClient.get()
+						.uri("http://service-2").retrieve().toEntity(String.class);
 				if (i % 2 != 0) {
 					list1.add(response.getBody());
 				}
@@ -172,9 +172,9 @@ public class NacosDiscoveryTest {
 			WebServerApplicationContext webServerApplicationContext = (WebServerApplicationContext) service1;
 			int port = webServerApplicationContext.getWebServer().getPort();
 
-			String response = new RestTemplate().getForEntity(
-					String.format("http://127.0.0.1:%d/actuator/nacosdiscovery", port),
-					String.class).getBody();
+			String response = RestClient.create().get()
+					.uri(String.format("http://127.0.0.1:%d/actuator/nacosdiscovery", port))
+					.retrieve().toEntity(String.class).getBody();
 
 			LinkedHashMap map = new ObjectMapper().readValue(response,
 					LinkedHashMap.class);

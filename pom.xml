@@ -422,7 +422,7 @@
                                 <excludeArtifact>spring-cloud-alibaba-coverage</excludeArtifact>
                                 <excludeArtifact>sentinel-core-example</excludeArtifact>
                                 <excludeArtifact>sentinel-openfeign-example</excludeArtifact>
-                                <excludeArtifact>sentinel-resttemplate-example</excludeArtifact>
+                                <excludeArtifact>sentinel-restclient-example</excludeArtifact>
                                 <excludeArtifact>sentinel-circuitbreaker-example</excludeArtifact>
                                 <excludeArtifact>sentinel-webflux-example</excludeArtifact>
                                 <excludeArtifact>sentinel-spring-cloud-gateway-example</excludeArtifact>

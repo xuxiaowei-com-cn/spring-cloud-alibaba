@@ -8,7 +8,7 @@
 
 ## Sentinel Example 
 
-在本 Example 项目中，主要演示 Sentinel 断路器，整合 Spring Cloud Gateway 和 OpenFeign、RestTemplate 以及 Webclient 的使用。
+在本 Example 项目中，主要演示 Sentinel 断路器，整合 Spring Cloud Gateway 和 OpenFeign、RestClient 以及 Webclient 的使用。
 
 ### 下载并启动 Sentinel Console
 
@@ -262,7 +262,7 @@ Hello
 
 项目启动完成之后，可以通过访问对应的 URL 访问，查看对应的 Sentinel 流控效果。
 
-> **注意：项目中提供的 RestTemplate 和 Webclient Example 同理。**
+> **注意：项目中提供的 RestClient 和 Webclient Example 同理。**
 
 ## Endpoint 信息查看
 

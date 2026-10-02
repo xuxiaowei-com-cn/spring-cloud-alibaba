@@ -18,8 +18,9 @@ package com.alibaba.cloud.sentinel;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
 import com.alibaba.cloud.sentinel.custom.SentinelAutoConfiguration;
 import com.alibaba.cloud.sentinel.custom.SentinelBeanPostProcessor;
 import com.alibaba.cloud.sentinel.endpoint.SentinelEndpoint;
@@ -50,8 +51,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import static com.alibaba.cloud.sentinel.SentinelConstants.BLOCK_PAGE_URL_CONF_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,16 +88,16 @@ public class SentinelAutoConfigurationTests {
 	private SentinelBeanPostProcessor sentinelBeanPostProcessor;
 
 	@Autowired
-	private RestTemplate restTemplate;
+	private RestClient.Builder restClientBuilder;
 
 	@Autowired
-	private RestTemplate restTemplateWithBlockClass;
+	private RestClient.Builder restClientBuilderWithBlockClass;
 
 	@Autowired
-	private RestTemplate restTemplateWithoutBlockClass;
+	private RestClient.Builder restClientBuilderWithoutBlockClass;
 
 	@Autowired
-	private RestTemplate restTemplateWithFallbackClass;
+	private RestClient.Builder restClientBuilderWithFallbackClass;
 
 	@LocalServerPort
 	private int port;
@@ -204,62 +205,81 @@ public class SentinelAutoConfigurationTests {
 	}
 
 	@Test
-	public void testRestTemplateBlockHandler() {
+	public void testRestClientBlockHandler() {
 
-		assertThat(restTemplate.getInterceptors().size()).isEqualTo(2);
-		assertThat(restTemplateWithBlockClass.getInterceptors().size()).isEqualTo(1);
+		assertThat(interceptorCount(restClientBuilder)).isEqualTo(2);
+		assertThat(interceptorCount(restClientBuilderWithBlockClass)).isEqualTo(1);
 
-		ResponseEntity responseEntityBlock = restTemplateWithBlockClass
-				.getForEntity(flowUrl, String.class);
+		ResponseEntity<String> responseEntityBlock = restClientBuilderWithBlockClass
+				.build()
+				.get()
+				.uri(flowUrl)
+				.retrieve()
+				.toEntity(String.class);
 
 		assertThat(responseEntityBlock.getBody()).isEqualTo("Oops");
 		assertThat(responseEntityBlock.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-		ResponseEntity responseEntityRaw = restTemplate.getForEntity(flowUrl,
-				String.class);
+		ResponseEntity<String> responseEntityRaw = restClientBuilder.build()
+				.get()
+				.uri(flowUrl)
+				.retrieve()
+				.toEntity(String.class);
 
 		assertThat(responseEntityRaw.getBody())
-				.isEqualTo("RestTemplate request block by sentinel");
+				.isEqualTo("RestClient request block by sentinel");
 		assertThat(responseEntityRaw.getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	@Test
-	public void testNormalRestTemplate() {
-		assertThat(restTemplateWithoutBlockClass.getInterceptors().size()).isEqualTo(0);
+	public void testNormalRestClient() {
+		assertThat(interceptorCount(restClientBuilderWithoutBlockClass)).isEqualTo(0);
+
+		RestClient restClient = restClientBuilderWithoutBlockClass.build();
 
 		assertThatThrownBy(() -> {
-			restTemplateWithoutBlockClass.getForEntity(flowUrl, String.class);
+			restClient.get().uri(flowUrl).retrieve().toEntity(String.class);
 		}).isInstanceOf(RestClientException.class);
+	}
+
+	/**
+	 * A {@link RestClient} does not expose its interceptors, so read them back from the
+	 * builder it is created from.
+	 */
+	private int interceptorCount(RestClient.Builder builder) {
+		AtomicInteger count = new AtomicInteger(-1);
+		builder.requestInterceptors(interceptors -> count.set(interceptors.size()));
+		return count.get();
 	}
 
 	@Configuration
 	static class SentinelTestConfiguration {
 
 		@Bean
-		@SentinelRestTemplate
-		RestTemplate restTemplate() {
-			RestTemplate restTemplate = new RestTemplate();
-			restTemplate.getInterceptors().add(mock(ClientHttpRequestInterceptor.class));
-			return restTemplate;
+		@SentinelRestClient
+		RestClient.Builder restClientBuilder() {
+			RestClient.Builder builder = RestClient.builder();
+			builder.requestInterceptor(mock(ClientHttpRequestInterceptor.class));
+			return builder;
 		}
 
 		@Bean
-		@SentinelRestTemplate(blockHandlerClass = ExceptionUtil.class,
+		@SentinelRestClient(blockHandlerClass = ExceptionUtil.class,
 				blockHandler = "handleException")
-		RestTemplate restTemplateWithBlockClass() {
-			return new RestTemplate();
+		RestClient.Builder restClientBuilderWithBlockClass() {
+			return RestClient.builder();
 		}
 
 		@Bean
-		@SentinelRestTemplate(fallbackClass = ExceptionUtil.class,
+		@SentinelRestClient(fallbackClass = ExceptionUtil.class,
 				fallback = "fallbackException")
-		RestTemplate restTemplateWithFallbackClass() {
-			return new RestTemplate();
+		RestClient.Builder restClientBuilderWithFallbackClass() {
+			return RestClient.builder();
 		}
 
 		@Bean
-		RestTemplate restTemplateWithoutBlockClass() {
-			return new RestTemplate();
+		RestClient.Builder restClientBuilderWithoutBlockClass() {
+			return RestClient.builder();
 		}
 
 	}

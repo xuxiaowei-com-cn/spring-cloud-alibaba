@@ -46,7 +46,7 @@ Spring Cloud Alibaba 也积极在 Proxyless 方向上探索，目前已经完成
 
 ## RPC 方向上的探索
 
-Spring Cloud Alibaba RPC 组件主要依赖于 OpenFeign，RestTemplate 等。社区计划通过加入 GRPC，Dubbo 的 rpc 解决方案，进一步增强社区的 RPC 组件能力。
+Spring Cloud Alibaba RPC 组件主要依赖于 OpenFeign，RestClient 等。社区计划通过加入 GRPC，Dubbo 的 rpc 解决方案，进一步增强社区的 RPC 组件能力。
 
 ## 分布式任务调度
 

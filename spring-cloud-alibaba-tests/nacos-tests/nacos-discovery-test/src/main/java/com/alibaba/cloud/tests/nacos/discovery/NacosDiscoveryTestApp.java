@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 /**
  *
@@ -43,11 +43,17 @@ public class NacosDiscoveryTestApp {
 		SpringApplication.run(NacosDiscoveryTestApp.class, args);
 	}
 
-	@Bean
 	@LoadBalanced
+	@Bean
 	@Profile("service-1")
-	RestTemplate restTemplate() {
-		return new RestTemplate();
+	public RestClient.Builder restClientBuilder() {
+		return RestClient.builder();
+	}
+
+	@Bean
+	@Profile("service-1")
+	public RestClient restClient(RestClient.Builder restClientBuilder) {
+		return restClientBuilder.build();
 	}
 
 	@RestController

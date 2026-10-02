@@ -19,7 +19,7 @@ server:
 
 spring:
   application:
-    name: sentinel-resttemplate-example
+    name: sentinel-restclient-example
 
   cloud:
     sentinel:

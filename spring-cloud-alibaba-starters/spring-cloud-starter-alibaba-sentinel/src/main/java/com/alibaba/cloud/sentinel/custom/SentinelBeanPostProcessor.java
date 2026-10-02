@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.cloud.sentinel.SentinelConstants;
-import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -40,14 +40,13 @@ import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 /**
- * PostProcessor handle @SentinelRestTemplate Annotation, add interceptor for
- * RestTemplate.
+ * PostProcessor handle @SentinelRestClient Annotation, add interceptor for RestClient.
  *
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
- * @see SentinelRestTemplate
+ * @see SentinelRestClient
  * @see SentinelProtectInterceptor
  */
 public class SentinelBeanPostProcessor implements MergedBeanDefinitionPostProcessor {
@@ -61,51 +60,51 @@ public class SentinelBeanPostProcessor implements MergedBeanDefinitionPostProces
 		this.applicationContext = applicationContext;
 	}
 
-	private ConcurrentHashMap<String, SentinelRestTemplate> cache = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<String, SentinelRestClient> cache = new ConcurrentHashMap<>();
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition,
 			Class<?> beanType, String beanName) {
-		// Fixes #3329: Support custom RestTemplate
-		if (beanName == null || !RestTemplate.class.isAssignableFrom(beanType)) {
+		// Fixes #3329: Support custom RestClient.Builder
+		if (beanName == null || !RestClient.Builder.class.isAssignableFrom(beanType)) {
 			return;
 		}
 
-		SentinelRestTemplate sentinelRestTemplate = this.getSentinelRestTemplateFromBeanDefinition(beanDefinition);
-		if (sentinelRestTemplate != null) {
+		SentinelRestClient sentinelRestClient = this.getSentinelRestClientFromBeanDefinition(beanDefinition);
+		if (sentinelRestClient != null) {
 			// check class and method validation
-			checkSentinelRestTemplate(sentinelRestTemplate, beanName);
-			cache.put(beanName, sentinelRestTemplate);
+			checkSentinelRestClient(sentinelRestClient, beanName);
+			cache.put(beanName, sentinelRestClient);
 		}
 	}
 
-	private @Nullable SentinelRestTemplate getSentinelRestTemplateFromBeanDefinition(RootBeanDefinition beanDefinition) {
-		@Nullable SentinelRestTemplate sentinelRestTemplate = null;
+	private @Nullable SentinelRestClient getSentinelRestClientFromBeanDefinition(RootBeanDefinition beanDefinition) {
+		@Nullable SentinelRestClient sentinelRestClient = null;
 		if (beanDefinition.getSource() instanceof StandardMethodMetadata sentinelSource) {
-			sentinelRestTemplate = sentinelSource.getIntrospectedMethod().getAnnotation(SentinelRestTemplate.class);
+			sentinelRestClient = sentinelSource.getIntrospectedMethod().getAnnotation(SentinelRestClient.class);
 		}
 
-		if (sentinelRestTemplate == null && beanDefinition.getResolvedFactoryMethod() != null) {
-			sentinelRestTemplate = beanDefinition.getResolvedFactoryMethod().getAnnotation(SentinelRestTemplate.class);
+		if (sentinelRestClient == null && beanDefinition.getResolvedFactoryMethod() != null) {
+			sentinelRestClient = beanDefinition.getResolvedFactoryMethod().getAnnotation(SentinelRestClient.class);
 		}
 
-		return sentinelRestTemplate;
+		return sentinelRestClient;
 	}
 
-	private void checkSentinelRestTemplate(SentinelRestTemplate sentinelRestTemplate,
+	private void checkSentinelRestClient(SentinelRestClient sentinelRestClient,
 			String beanName) {
-		checkBlock4RestTemplate(sentinelRestTemplate.blockHandlerClass(),
-				sentinelRestTemplate.blockHandler(), beanName,
+		checkBlock4RestClient(sentinelRestClient.blockHandlerClass(),
+				sentinelRestClient.blockHandler(), beanName,
 				SentinelConstants.BLOCK_TYPE);
-		checkBlock4RestTemplate(sentinelRestTemplate.fallbackClass(),
-				sentinelRestTemplate.fallback(), beanName,
+		checkBlock4RestClient(sentinelRestClient.fallbackClass(),
+				sentinelRestClient.fallback(), beanName,
 				SentinelConstants.FALLBACK_TYPE);
-		checkBlock4RestTemplate(sentinelRestTemplate.urlCleanerClass(),
-				sentinelRestTemplate.urlCleaner(), beanName,
+		checkBlock4RestClient(sentinelRestClient.urlCleanerClass(),
+				sentinelRestClient.urlCleaner(), beanName,
 				SentinelConstants.URLCLEANER_TYPE);
 	}
 
-	private void checkBlock4RestTemplate(Class<?> blockClass, String blockMethod,
+	private void checkBlock4RestClient(Class<?> blockClass, String blockMethod,
 			String beanName, String type) {
 		if (blockClass == void.class && !StringUtils.hasLength(blockMethod)) {
 			return;
@@ -178,39 +177,42 @@ public class SentinelBeanPostProcessor implements MergedBeanDefinitionPostProces
 	public Object postProcessAfterInitialization(Object bean, String beanName)
 			throws BeansException {
 		if (beanName != null && cache.containsKey(beanName)) {
-			// add interceptor for each RestTemplate with @SentinelRestTemplate annotation
+			// add interceptor for each RestClient.Builder with @SentinelRestClient
+			// annotation
 			StringBuilder interceptorBeanNamePrefix = new StringBuilder();
-			SentinelRestTemplate sentinelRestTemplate = cache.get(beanName);
+			SentinelRestClient sentinelRestClient = cache.get(beanName);
 			interceptorBeanNamePrefix
 					.append(StringUtils.uncapitalize(
 							SentinelProtectInterceptor.class.getSimpleName()))
 					.append("_")
-					.append(sentinelRestTemplate.blockHandlerClass().getSimpleName())
-					.append(sentinelRestTemplate.blockHandler()).append("_")
-					.append(sentinelRestTemplate.fallbackClass().getSimpleName())
-					.append(sentinelRestTemplate.fallback()).append("_")
-					.append(sentinelRestTemplate.urlCleanerClass().getSimpleName())
-					.append(sentinelRestTemplate.urlCleaner());
-			RestTemplate restTemplate = (RestTemplate) bean;
+					.append(sentinelRestClient.blockHandlerClass().getSimpleName())
+					.append(sentinelRestClient.blockHandler()).append("_")
+					.append(sentinelRestClient.fallbackClass().getSimpleName())
+					.append(sentinelRestClient.fallback()).append("_")
+					.append(sentinelRestClient.urlCleanerClass().getSimpleName())
+					.append(sentinelRestClient.urlCleaner());
+			RestClient.Builder restClientBuilder = (RestClient.Builder) bean;
 			String interceptorBeanName = interceptorBeanNamePrefix + "@"
 					+ bean.toString();
-			registerBean(interceptorBeanName, sentinelRestTemplate, (RestTemplate) bean);
+			registerBean(interceptorBeanName, sentinelRestClient);
 			SentinelProtectInterceptor sentinelProtectInterceptor = applicationContext
 					.getBean(interceptorBeanName, SentinelProtectInterceptor.class);
-			restTemplate.getInterceptors().add(0, sentinelProtectInterceptor);
+			// Insert first so that Sentinel sees the original (for example
+			// load-balanced) URI before any other interceptor rewrites it.
+			restClientBuilder.requestInterceptors(
+					interceptors -> interceptors.add(0, sentinelProtectInterceptor));
 		}
 		return bean;
 	}
 
 	private void registerBean(String interceptorBeanName,
-			SentinelRestTemplate sentinelRestTemplate, RestTemplate restTemplate) {
+			SentinelRestClient sentinelRestClient) {
 		// register SentinelProtectInterceptor bean
 		DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext
 				.getAutowireCapableBeanFactory();
 		BeanDefinitionBuilder beanDefinitionBuilder = BeanDefinitionBuilder
 				.genericBeanDefinition(SentinelProtectInterceptor.class);
-		beanDefinitionBuilder.addConstructorArgValue(sentinelRestTemplate);
-		beanDefinitionBuilder.addConstructorArgValue(restTemplate);
+		beanDefinitionBuilder.addConstructorArgValue(sentinelRestClient);
 		BeanDefinition interceptorBeanDefinition = beanDefinitionBuilder
 				.getRawBeanDefinition();
 		beanFactory.registerBeanDefinition(interceptorBeanName,

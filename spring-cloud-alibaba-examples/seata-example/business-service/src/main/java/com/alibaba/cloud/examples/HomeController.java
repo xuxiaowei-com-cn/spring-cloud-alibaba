@@ -22,15 +22,13 @@ import org.apache.seata.spring.annotation.GlobalTransactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 /**
  * @author xiaojing
@@ -50,15 +48,15 @@ public class HomeController {
 
 	private static final int ORDER_COUNT = 2;
 
-	private final RestTemplate restTemplate;
+	private final RestClient restClient;
 
 	private final OrderService orderService;
 
 	private final StorageService storageService;
 
-	public HomeController(RestTemplate restTemplate, OrderService orderService,
+	public HomeController(RestClient restClient, OrderService orderService,
 			StorageService storageService) {
-		this.restTemplate = restTemplate;
+		this.restClient = restClient;
 		this.orderService = orderService;
 		this.storageService = storageService;
 	}
@@ -67,29 +65,27 @@ public class HomeController {
 	@GetMapping(value = "/seata/rest", produces = "application/json")
 	public String rest() {
 
-		String result = restTemplate.getForObject(
-				"http://127.0.0.1:18082/storage/" + COMMODITY_CODE + "/" + ORDER_COUNT,
-				String.class);
+		String result = restClient.get()
+				.uri("http://127.0.0.1:18082/storage/" + COMMODITY_CODE + "/"
+						+ ORDER_COUNT)
+				.retrieve().body(String.class);
 
 		if (!SUCCESS.equals(result)) {
 			throw new RuntimeException();
 		}
 
 		String url = "http://127.0.0.1:18083/order";
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
 		MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
 		map.add("userId", USER_ID);
 		map.add("commodityCode", COMMODITY_CODE);
 		map.add("orderCount", ORDER_COUNT + "");
 
-		HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(
-				map, headers);
-
 		ResponseEntity<String> response;
 		try {
-			response = restTemplate.postForEntity(url, request, String.class);
+			response = restClient.post().uri(url)
+					.contentType(MediaType.APPLICATION_FORM_URLENCODED).body(map)
+					.retrieve().toEntity(String.class);
 		}
 		catch (Exception exx) {
 			throw new RuntimeException("mock error");

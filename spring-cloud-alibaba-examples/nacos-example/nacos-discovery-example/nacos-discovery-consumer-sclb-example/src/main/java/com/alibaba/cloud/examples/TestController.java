@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 
 /**
@@ -37,10 +37,10 @@ import org.springframework.web.client.RestTemplate;
 public class TestController {
 
 	@Resource
-	private RestTemplate urlCleanedRestTemplate;
+	private RestClient urlCleanedRestClient;
 
 	@Resource
-	private RestTemplate restTemplate;
+	private RestClient restClient;
 
 	@Resource
 	private EchoClient echoClient;
@@ -55,15 +55,15 @@ public class TestController {
 
 	@GetMapping("/echo-rest/{str}")
 	public String rest(@PathVariable String str) {
-		return urlCleanedRestTemplate
-				.getForObject(SERVICE_PROVIDER_ADDRESS + "/echo/" + str,
-						String.class);
+		return urlCleanedRestClient.get()
+				.uri(SERVICE_PROVIDER_ADDRESS + "/echo/" + str).retrieve()
+				.body(String.class);
 	}
 
 	@GetMapping("/zone")
 	public String zone() {
-		return "consumer zone " + zone + "\n" + urlCleanedRestTemplate
-				.getForObject(SERVICE_PROVIDER_ADDRESS + "/zone", String.class);
+		return "consumer zone " + zone + "\n" + urlCleanedRestClient.get()
+				.uri(SERVICE_PROVIDER_ADDRESS + "/zone").retrieve().body(String.class);
 	}
 
 	@GetMapping("/echo-feign/{str}")
@@ -73,19 +73,20 @@ public class TestController {
 
 	@GetMapping("/index")
 	public String index() {
-		return restTemplate.getForObject(SERVICE_PROVIDER_ADDRESS, String.class);
+		return restClient.get().uri(SERVICE_PROVIDER_ADDRESS).retrieve()
+				.body(String.class);
 	}
 
 	@GetMapping("/test")
 	public String test() {
-		return restTemplate.getForObject(SERVICE_PROVIDER_ADDRESS + "/test",
-				String.class);
+		return restClient.get().uri(SERVICE_PROVIDER_ADDRESS + "/test").retrieve()
+				.body(String.class);
 	}
 
 	@GetMapping("/sleep")
 	public String sleep() {
-		return restTemplate.getForObject(SERVICE_PROVIDER_ADDRESS + "/sleep",
-				String.class);
+		return restClient.get().uri(SERVICE_PROVIDER_ADDRESS + "/sleep").retrieve()
+				.body(String.class);
 	}
 
 	@GetMapping("/notFound-feign")

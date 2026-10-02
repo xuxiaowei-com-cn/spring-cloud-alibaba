@@ -8,7 +8,7 @@ This Example project demonstrates how to use `spring-cloud-starter-alibaba-senti
 
 ## Sentinel Example
 
-In this Example project, the Sentinel circuit breaker is mainly demonstrated, and the Spring Cloud Gateway is integrated with the use of OpenFeign, RestTemplate, and Webclient.
+In this Example project, the Sentinel circuit breaker is mainly demonstrated, and the Spring Cloud Gateway is integrated with the use of OpenFeign, RestClient, and Webclient.
 
 ### Download and launch Sentinel Console
 
@@ -260,7 +260,7 @@ The project supports two startup modes: startup through the main class `OpenFeig
 
 After the project is started, you can access the corresponding URL to view the corresponding Sentinel flow control effect.
 
-> **Note: The RestTemplate provided in the project is the same as the Webclient Example.**
+> **Note: The RestClient provided in the project is the same as the Webclient Example.**
 
 ## Endpoint information viewing
 

@@ -14,30 +14,32 @@
  * limitations under the License.
  */
 
-package com.alibaba.cloud.seata.rest;
+package com.alibaba.cloud.examples.configuration;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
+
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestTemplate;
 
 /**
- * @author xiaojing
- * @author ChangJin Wei (魏昌进)
+ * @author raozihao
+ * @author <a href="mailto:zihaorao@gmail.com">Steve</a>
  */
-@Configuration(proxyBeanMethods = false)
-@ConditionalOnClass({RestClient.class, RestTemplate.class})
-public class SeataRestTemplateAutoConfiguration {
+@Configuration
+public class RestClientConfiguration {
 
+	@LoadBalanced
 	@Bean
-	public SeataRestTemplateInterceptor seataRestTemplateInterceptor() {
-		return new SeataRestTemplateInterceptor();
+	@SentinelRestClient
+	public RestClient.Builder restClientBuilder() {
+		return RestClient.builder();
 	}
 
 	@Bean
-	public SeataRestTemplateInterceptorAfterPropertiesSet seataRestTemplateInterceptorConfiguration() {
-		return new SeataRestTemplateInterceptorAfterPropertiesSet();
+	public RestClient restClient(RestClient.Builder restClientBuilder) {
+		return restClientBuilder.build();
 	}
-
 }

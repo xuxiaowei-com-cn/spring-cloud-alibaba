@@ -28,14 +28,14 @@ import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.resttestclient.TestRestTemplate;
-import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.client.circuitbreaker.CircuitBreakerFactory;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
+import org.springframework.test.web.servlet.client.RestTestClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,7 +46,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 /**
  * @author Eric Zhao
  */
-@AutoConfigureTestRestTemplate
+@AutoConfigureRestTestClient
 @SpringBootTest(webEnvironment = RANDOM_PORT,
 		classes = SentinelCircuitBreakerIntegrationTest.Application.class,
 		properties = { "spring.cloud.discovery.client.health-indicator.enabled=false" })
@@ -132,11 +132,11 @@ public class SentinelCircuitBreakerIntegrationTest {
 		@Service
 		public static class DemoControllerService {
 
-			private TestRestTemplate rest;
+			private RestTestClient rest;
 
 			private CircuitBreakerFactory cbFactory;
 
-			DemoControllerService(TestRestTemplate rest,
+			DemoControllerService(RestTestClient rest,
 					CircuitBreakerFactory cbFactory) {
 				this.rest = rest;
 				this.cbFactory = cbFactory;
@@ -144,13 +144,15 @@ public class SentinelCircuitBreakerIntegrationTest {
 
 			public String slow(boolean slow) {
 				return cbFactory.create("slow").run(
-						() -> rest.getForObject("/slow?slow=" + slow, String.class),
+						() -> rest.get().uri("/slow?slow=" + slow).exchange()
+								.returnResult(String.class).getResponseBody(),
 						t -> "fallback");
 			}
 
 			public String normal() {
 				return cbFactory.create("normal").run(
-						() -> rest.getForObject("/normal", String.class),
+						() -> rest.get().uri("/normal").exchange()
+								.returnResult(String.class).getResponseBody(),
 						t -> "fallback");
 			}
 

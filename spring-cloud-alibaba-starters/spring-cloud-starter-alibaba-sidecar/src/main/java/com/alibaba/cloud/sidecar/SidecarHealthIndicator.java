@@ -23,8 +23,7 @@ import java.util.Objects;
 import org.springframework.boot.health.contributor.AbstractHealthIndicator;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -34,12 +33,26 @@ public class SidecarHealthIndicator extends AbstractHealthIndicator {
 
 	private final SidecarProperties sidecarProperties;
 
-	private final RestTemplate restTemplate;
+	private final RestClient restClient;
 
 	public SidecarHealthIndicator(SidecarProperties sidecarProperties,
-			RestTemplate restTemplate) {
+			RestClient restClient) {
 		this.sidecarProperties = sidecarProperties;
-		this.restTemplate = restTemplate;
+		this.restClient = restClient;
+	}
+
+	/**
+	 * Creates an indicator backed by the given {@link RestTemplate}.
+	 * <p>
+	 * The {@code RestTemplate} is adapted with {@link RestClient#create(RestTemplate)} so
+	 * that a project which has not migrated yet keeps exactly the configuration
+	 * (interceptors, converters, request factory, error handler) it has always used.
+	 * @param sidecarProperties the sidecar properties
+	 * @param restTemplate the {@code RestTemplate} used to perform the health check
+	 */
+	public SidecarHealthIndicator(SidecarProperties sidecarProperties,
+			RestTemplate restTemplate) {
+		this(sidecarProperties, RestClient.create(restTemplate));
 	}
 
 	@Override
@@ -51,12 +64,11 @@ public class SidecarHealthIndicator extends AbstractHealthIndicator {
 				return;
 			}
 
-			ResponseEntity<Map<String, Object>> exchange = this.restTemplate.exchange(uri,
-					HttpMethod.GET, null,
-					new ParameterizedTypeReference<Map<String, Object>>() {
+			Map<String, Object> map = this.restClient.get()
+					.uri(uri)
+					.retrieve()
+					.body(new ParameterizedTypeReference<Map<String, Object>>() {
 					});
-
-			Map<String, Object> map = exchange.getBody();
 
 			if (map == null) {
 				this.getWarning(builder);

@@ -21,6 +21,7 @@ import org.springframework.boot.health.autoconfigure.contributor.ConditionalOnEn
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -36,10 +37,16 @@ public class SidecarAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean
+	public RestClient restClient() {
+		return RestClient.builder().build();
+	}
+
+	@Bean
 	@ConditionalOnEnabledHealthIndicator("sidecar")
 	public SidecarHealthIndicator sidecarHealthIndicator(
-			SidecarProperties sidecarProperties, RestTemplate restTemplate) {
-		return new SidecarHealthIndicator(sidecarProperties, restTemplate);
+			SidecarProperties sidecarProperties, RestClient restClient) {
+		return new SidecarHealthIndicator(sidecarProperties, restClient);
 	}
 
 	@Bean

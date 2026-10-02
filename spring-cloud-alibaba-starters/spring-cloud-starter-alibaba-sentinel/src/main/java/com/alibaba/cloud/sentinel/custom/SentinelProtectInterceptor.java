@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
 import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
 import com.alibaba.cloud.sentinel.rest.SentinelClientHttpResponse;
 import com.alibaba.csp.sentinel.Entry;
@@ -38,19 +39,32 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Interceptor using by SentinelRestTemplate.
+ * Interceptor using by both {@link SentinelRestTemplate} and {@link SentinelRestClient}.
+ * <p>
+ * The same interceptor implementation protects {@code RestTemplate} and {@code RestClient}
+ * calls; only the way errors are detected differs, because {@code RestClient} does not
+ * expose the error handler of the client it is registered on.
  *
  * @author <a href="mailto:fangjian0423@gmail.com">Jim</a>
  */
 public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor {
 
-	private final SentinelRestTemplate sentinelRestTemplate;
+	private final Config config;
 
-	private final RestTemplate restTemplate;
+	private final @Nullable RestTemplate restTemplate;
 
 	public SentinelProtectInterceptor(SentinelRestTemplate sentinelRestTemplate,
 			RestTemplate restTemplate) {
-		this.sentinelRestTemplate = sentinelRestTemplate;
+		this(Config.of(sentinelRestTemplate), restTemplate);
+	}
+
+	public SentinelProtectInterceptor(SentinelRestClient sentinelRestClient) {
+		this(Config.of(sentinelRestClient), null);
+	}
+
+	private SentinelProtectInterceptor(Config config,
+			@Nullable RestTemplate restTemplate) {
+		this.config = config;
 		this.restTemplate = restTemplate;
 	}
 
@@ -67,8 +81,7 @@ public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor 
 			entryWithPath = false;
 		}
 		Method urlCleanerMethod = BlockClassRegistry.lookupUrlCleaner(
-				sentinelRestTemplate.urlCleanerClass(),
-				sentinelRestTemplate.urlCleaner());
+				config.urlCleanerClass(), config.urlCleaner());
 		if (urlCleanerMethod != null) {
 			hostWithPathResource = (String) methodInvoke(urlCleanerMethod,
 					hostWithPathResource);
@@ -83,9 +96,9 @@ public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor 
 				hostWithPathEntry = SphU.entry(hostWithPathResource, EntryType.OUT);
 			}
 			response = execution.execute(request, body);
-			if (this.restTemplate.getErrorHandler().hasError(response)) {
-				Tracer.trace(
-						new IllegalStateException("RestTemplate ErrorHandler has error"));
+			if (hasError(response)) {
+				Tracer.trace(new IllegalStateException(
+						"HTTP client responded with an error: " + response.getStatusCode()));
 			}
 			return response;
 		}
@@ -116,13 +129,20 @@ public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor 
 		}
 	}
 
+	private boolean hasError(ClientHttpResponse response) throws IOException {
+		if (this.restTemplate != null) {
+			return this.restTemplate.getErrorHandler().hasError(response);
+		}
+		return response.getStatusCode().isError();
+	}
+
 	private ClientHttpResponse handleBlockException(HttpRequest request, byte[] body,
 			ClientHttpRequestExecution execution, BlockException ex) {
 		Object[] args = new Object[] { request, body, execution, ex };
 		// handle degrade
 		if (isDegradeFailure(ex)) {
-			Method fallbackMethod = extractFallbackMethod(sentinelRestTemplate.fallback(),
-					sentinelRestTemplate.fallbackClass());
+			Method fallbackMethod = extractFallbackMethod(config.fallback(),
+					config.fallbackClass());
 			if (fallbackMethod != null) {
 				return (ClientHttpResponse) methodInvoke(fallbackMethod, args);
 			}
@@ -131,9 +151,8 @@ public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor 
 			}
 		}
 		// handle flow
-		Method blockHandler = extractBlockHandlerMethod(
-				sentinelRestTemplate.blockHandler(),
-				sentinelRestTemplate.blockHandlerClass());
+		Method blockHandler = extractBlockHandlerMethod(config.blockHandler(),
+				config.blockHandlerClass());
 		if (blockHandler != null) {
 			return (ClientHttpResponse) methodInvoke(blockHandler, args);
 		}
@@ -164,6 +183,24 @@ public class SentinelProtectInterceptor implements ClientHttpRequestInterceptor 
 
 	private boolean isDegradeFailure(BlockException ex) {
 		return ex instanceof DegradeException;
+	}
+
+	private record Config(Class<?> blockHandlerClass, String blockHandler,
+			Class<?> fallbackClass, String fallback, Class<?> urlCleanerClass,
+			String urlCleaner) {
+
+		static Config of(SentinelRestTemplate annotation) {
+			return new Config(annotation.blockHandlerClass(), annotation.blockHandler(),
+					annotation.fallbackClass(), annotation.fallback(),
+					annotation.urlCleanerClass(), annotation.urlCleaner());
+		}
+
+		static Config of(SentinelRestClient annotation) {
+			return new Config(annotation.blockHandlerClass(), annotation.blockHandler(),
+					annotation.fallbackClass(), annotation.fallback(),
+					annotation.urlCleanerClass(), annotation.urlCleaner());
+		}
+
 	}
 
 }

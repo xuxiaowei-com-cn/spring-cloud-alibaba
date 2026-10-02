@@ -18,6 +18,7 @@ package com.alibaba.cloud.sentinel.aot.hint;
 
 import java.lang.reflect.Constructor;
 
+import com.alibaba.cloud.sentinel.annotation.SentinelRestClient;
 import com.alibaba.cloud.sentinel.annotation.SentinelRestTemplate;
 import com.alibaba.cloud.sentinel.custom.SentinelProtectInterceptor;
 import org.jspecify.annotations.Nullable;
@@ -33,9 +34,14 @@ import org.springframework.web.client.RestTemplate;
 public class SentinelProtectInterceptorHints implements RuntimeHintsRegistrar {
 	@Override
 	public void registerHints(RuntimeHints hints, @Nullable ClassLoader classLoader) {
+		registerConstructor(hints, SentinelRestTemplate.class, RestTemplate.class);
+		registerConstructor(hints, SentinelRestClient.class);
+	}
+
+	private void registerConstructor(RuntimeHints hints, Class<?>... parameterTypes) {
 		Constructor<SentinelProtectInterceptor> constructor;
 		try {
-			constructor = SentinelProtectInterceptor.class.getConstructor(SentinelRestTemplate.class, RestTemplate.class);
+			constructor = SentinelProtectInterceptor.class.getConstructor(parameterTypes);
 		}
 		catch (NoSuchMethodException e) {
 			throw new RuntimeException(e);

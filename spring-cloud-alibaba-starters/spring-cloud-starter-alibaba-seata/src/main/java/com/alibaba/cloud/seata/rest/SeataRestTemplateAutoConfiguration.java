@@ -40,4 +40,10 @@ public class SeataRestTemplateAutoConfiguration {
 		return new SeataRestTemplateInterceptorAfterPropertiesSet();
 	}
 
+	@Bean
+	public SeataRestClientBuilderBeanPostProcessor seataRestClientBuilderBeanPostProcessor(
+			SeataRestTemplateInterceptor seataRestTemplateInterceptor) {
+		return new SeataRestClientBuilderBeanPostProcessor(seataRestTemplateInterceptor);
+	}
+
 }
